@@ -7,3 +7,4 @@ class Settings:
     should_replace: bool
     postfix: str
     ignore_less_than: int
+    verbose: bool

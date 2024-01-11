@@ -1,4 +1,8 @@
+import logging
 import shutil
+
+
+logger = logging.getLogger("ms_word_image_compressor")
 
 
 class ZipSaver:
@@ -11,9 +15,16 @@ class ZipSaver:
         )
 
     def save(self) -> None:
+        logger.debug(f"[Saver] Saving file to {self.path_to_save}")
         result_filename = shutil.make_archive(
             self.path_to_save, "zip", self.folder_path
         )
         filename = ".".join(result_filename.split(".")[:-1])
 
+        logger.debug(f"[Saver] Saved file to {result_filename} sucessfully!")
+
         shutil.move(result_filename, filename)
+
+        logger.debug(
+            f"[Saver] Renamed file from {result_filename} to {filename} sucessfully!"
+        )

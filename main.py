@@ -1,10 +1,14 @@
+import logging
 import os
 from argparse import ArgumentParser, BooleanOptionalAction
 
+from compressor import ImageCompressor
 from settings import Settings
 from zipextracter import ZipExtracter
-from compressor import ImageCompressor
 from zipsaver import ZipSaver
+
+
+logger = logging.getLogger("ms_word_image_compressor")
 
 
 def add_cli_args(parser: ArgumentParser) -> None:
@@ -32,6 +36,14 @@ def add_cli_args(parser: ArgumentParser) -> None:
         default=100,
         type=int,
     )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        help="Verbose output",
+        default=False,
+        type=bool,
+        action=BooleanOptionalAction,
+    )
 
 
 def parse_args_to_settings(parser: ArgumentParser) -> Settings:
@@ -42,7 +54,21 @@ def parse_args_to_settings(parser: ArgumentParser) -> Settings:
         should_replace=args.replace,
         postfix=args.postfix,
         ignore_less_than=args.ignore_less * 1024,
+        verbose=args.verbose,
     )
+
+
+def configure_logging(verbose: bool) -> None:
+    level = logging.DEBUG if verbose else logging.INFO
+
+    logger_handler = logging.StreamHandler()
+    logger_handler.setLevel(level)
+
+    logger_formatter = logging.Formatter("%(message)s")
+    logger_handler.setFormatter(logger_formatter)
+
+    logger.addHandler(logger_handler)
+    logger.setLevel(level)
 
 
 def main() -> None:
@@ -51,6 +77,10 @@ def main() -> None:
     add_cli_args(args_parser)
 
     settings = parse_args_to_settings(args_parser)
+
+    configure_logging(settings.verbose)
+
+    logger.info(f"[App] Compressing {settings.path}")
 
     zip_extracter = ZipExtracter(settings.path)
     zip_extracter.extract()
@@ -75,6 +105,8 @@ def main() -> None:
     zip_saver.save()
 
     zip_extracter.clear()
+
+    logger.info("[App] Everything is cool! File has been saved")
 
 
 if __name__ == "__main__":
